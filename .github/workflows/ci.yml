@@ -1,0 +1,58 @@
+name: CI/CD Pipeline - Microservices Training
+
+# Crea los secretos en tu repositorio (Settings → Secrets → Actions):
+#   DOCKERHUB_USERNAME
+#   DOCKERHUB_TOKEN
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 🧾 1. Clonar el repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ☕ 2. Instalar JDK (ajusta versión si tu proyecto usa otra)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 🧪 3. Compilar y testear user-service
+      - name: Build and test user-service
+        run: |
+          cd user-service
+          mvn clean package -DskipTests=false
+
+      # 🧪 4. Compilar y testear order-service
+      - name: Build and test order-service
+        run: |
+          cd order-service
+          mvn clean package -DskipTests=false
+
+      # 🐳 5. Iniciar sesión en Docker Hub (usa tus secrets del repo)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 🧱 6. Construir imágenes Docker
+      - name: Build Docker images
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest ./user-service
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/order-service:latest ./order-service
+
+      # 📤 7. Subir imágenes a Docker Hub
+      - name: Push Docker images
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/order-service:latest
