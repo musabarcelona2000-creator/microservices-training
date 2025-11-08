@@ -30,13 +30,13 @@ jobs:
       - name: Build and test user-service
         run: |
           cd user-service
-          mvn clean package -DskipTests=true
+          mvn clean package -DskipTests=false
 
       # 🧪 4. Compilar y testear order-service
       - name: Build and test order-service
         run: |
           cd order-service
-          mvn clean package -DskipTests=true
+          mvn clean package -DskipTests=false
 
       # 🐳 5. Iniciar sesión en Docker Hub (usa tus secrets del repo)
       - name: Log in to Docker Hub
