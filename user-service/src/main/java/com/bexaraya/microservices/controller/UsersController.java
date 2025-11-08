@@ -48,7 +48,9 @@ public class UsersController {
 	@PutMapping("/{id}")
 	public ResponseEntity<User> updateUser(@RequestBody User user,
 			@PathVariable Long id) {
-		return ResponseEntity.ok(userService.updateUser(user, id));
+		return userService.updateUser(user, id)
+						  .map(ResponseEntity::ok)
+						  .orElse(ResponseEntity.notFound().build());
 	}
 	
 	@DeleteMapping("/{id}")
@@ -57,7 +59,12 @@ public class UsersController {
 	//@PreAuthorize("hasRole('ADMIN')")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
-		userService.deleteUserById(id);
-		return ResponseEntity.noContent().build();
+		boolean deleted = userService.deleteUserById(id);
+		if (deleted) {
+			return ResponseEntity.noContent().build();
+		}
+		else {
+			return ResponseEntity.notFound().build();
+		}
 	}
 }

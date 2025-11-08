@@ -3,10 +3,11 @@ package com.bexaraya.microservices.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
-
+import com.bexaraya.microservices.controller.OrdersController;
 import com.bexaraya.microservices.dto.UserDto;
 import com.bexaraya.microservices.event.UserEvent;
 import com.bexaraya.microservices.model.Order;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
-
+	
 	private final OrderRepository orderRepository;
 	private final UserClient userClient;
 	
@@ -43,13 +44,18 @@ public class OrderService {
 		return orderRepository.findById(id);
 	}
 
-	public Order updateOrder(Order order, Long id) {
+	public Optional<Order> updateOrder(Order order, Long id) {
 		order.setId(id);
-		return orderRepository.save(order);
+		return orderRepository.findById(id)
+					.map(existing -> orderRepository.save(order));
 	}
 
-	public void deleteOrderById(Long id) {
-		orderRepository.deleteById(id);
+	public boolean deleteOrderById(Long id) {
+		if (orderRepository.existsById(id)) {
+			orderRepository.deleteById(id);	
+			return true;
+		}
+		return false;
 	}
 
 }

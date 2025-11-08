@@ -1,6 +1,7 @@
 package com.bexaraya.microservices.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.kafka.clients.consumer.internals.events.ResetPositionsEvent;
 import org.springframework.boot.actuate.web.exchanges.HttpExchange.Response;
@@ -48,7 +49,9 @@ public class OrdersController {
 	@PutMapping("/{id}")
 	public ResponseEntity<Order> updateOrder(@RequestBody Order order,
 			@PathVariable Long id) {
-		return ResponseEntity.ok(orderService.updateOrder(order, id));
+		return orderService.updateOrder(order, id)
+						   .map(ResponseEntity::ok)
+						   .orElse(ResponseEntity.notFound().build());
 	}
 	
 	@DeleteMapping("/{id}")
@@ -57,7 +60,12 @@ public class OrdersController {
 	//@PreAuthorize("hasRole('ADMIN')")
 	@PreAuthorize("hasAuthority('ADMIN')")
 	public ResponseEntity<Void> deleteOrderById(@PathVariable Long id) {
-		orderService.deleteOrderById(id);
-		return ResponseEntity.noContent().build();
+		boolean deleted = orderService.deleteOrderById(id);
+		if (deleted) {
+			return ResponseEntity.noContent().build();	
+		}
+		else {
+			return ResponseEntity.notFound().build();			
+		}
 	}
 }
