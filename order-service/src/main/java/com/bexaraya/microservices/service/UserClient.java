@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.bexaraya.microservices.config.FeignConfig;
 import com.bexaraya.microservices.dto.UserDto;
 
-@FeignClient(name = "user-service", url = "${user-service.url}")
+//@FeignClient(name = "user-service", url = "${user-service.url}")
+@FeignClient(name = "user-service") // Al usar service discovery: ya no usamos una URL fija, sino el spring.application.name.
 @ConditionalOnProperty(value = "feign.enabled", havingValue = "true", matchIfMissing = true)
 public interface UserClient {
 
